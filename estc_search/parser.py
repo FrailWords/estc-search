@@ -53,10 +53,10 @@ def _estc_url(estc_number: str):
 
 
 def est_info(estc_number: str) -> pd.DataFrame:
-    # url = _estc_url(estc_number)
-    # html = _read_url(url)
-    text_file = open("test.html", "r")
-    html = text_file.read()
+    url = _estc_url(estc_number)
+    html = _read_url(url)
+    # text_file = open("test.html", "r")
+    # html = text_file.read()
     soup = BeautifulSoup(html, "html.parser")
     _do_query = partial(_query_html, soup)
 
