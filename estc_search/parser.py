@@ -60,11 +60,13 @@ def est_info(estc_number: str) -> pd.DataFrame:
     soup = BeautifulSoup(html, "html.parser")
     _do_query = partial(_query_html, soup)
 
-    columns = ["Title", "Author", "Pub_Info", "Description"]
-    text_queries = ["Main Title", "ME-Personal Name", "Imprint", "Phys.Description"]
+    columns = ["Title", "Author", "Pub_Info", "Description", "Location", "General Note", "Citation/Ref. Note"]
+    text_queries = ["Main Title", "ME-Personal Name", "Imprint", "Phys.Description", "Location",
+                    "General Note", "Citation/Ref. Note"]
 
     df_values = {}
     for column, query in zip(columns, text_queries):
         df_values[column] = _do_query(query)
     df = pd.DataFrame(df_values)
+    df.fillna('')
     return df
