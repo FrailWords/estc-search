@@ -11,4 +11,5 @@ function addToPATH {
 addToPATH $HOME/.poetry/bin
 
 # run parser
-poetry run chewfiles --estc_number $1
+ESTC_NUMBERS=$1
+poetry run chewfiles --estc_numbers ${ESTC_NUMBERS}

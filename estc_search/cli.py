@@ -4,12 +4,14 @@ from tabulate import tabulate
 
 
 @click.command()
-@click.option("--estc_number", prompt="estc_number", help="Search ESTC using this number")
-def main(estc_number):
-    result = est_info(estc_number)
-    filename = "{}.csv".format(estc_number)
-    result.to_csv(filename, index=False)
-    print(tabulate(est_info(estc_number), headers='keys', tablefmt='fancy_grid', showindex=False, maxcolwidths=[10, 30, 30, 30, 20, 30, 30, 30]))
+@click.option('--estc_numbers', is_flag=False, default=[], required=True,
+              metavar='<estc_numbers>', type=click.STRING, help='ESTC numbers')
+def main(estc_numbers):
+    # split input by ',' and remove whitespace
+    estc_numbers = [c.strip() for c in estc_numbers.split(',')]
+    result = est_info(estc_numbers)
+    result.to_csv('output.csv', index=False)
+    print(tabulate(result, headers='keys', tablefmt='fancy_grid', showindex=False, maxcolwidths=[10, 30, 30, 30, 20, 30, 30, 30, 30]))
 
 
 if __name__ == "__main__":

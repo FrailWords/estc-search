@@ -4,8 +4,12 @@ import pandas as pd
 import urllib.request
 from urllib.parse import parse_qs, urlencode, urlsplit
 
+columns = ["ESTC No.", "Title", "Author", "Publisher Info", "Description", "Locations", "General Notes", "Citation/Ref. Notes", "Electronic Location"]
+text_queries = ["ESTC Citation No.", "Main Title", "ME-Personal Name", "Imprint", "Phys.Description", "Location",
+                "General Note", "Citation/Ref. Note", "Electronic Location"]
 
-def _query_html(soup: BeautifulSoup, field: str) -> pd.Series:
+
+def _query_html(soup: BeautifulSoup, field: str) -> str:
     """
     Finds all instances of single query field e.g. Author, Title etc.
     (becomes column in DF)
@@ -26,11 +30,13 @@ def _query_html(soup: BeautifulSoup, field: str) -> pd.Series:
     all_text = soup.find_all('td', string=field)
     values = []
     for text in all_text:
-        value = text.find_next_sibling("td").text
-        if value is not None:
+        value = text.find_next_sibling("td").text.strip()
+        if value is not None and value != 'nan':
             value = value.replace('\xa0', ' ')
             values.append(value)
-    return pd.Series(values, dtype=str)
+        else:
+            values.append('')
+    return '\t---\t'.join(values)
 
 
 def _read_url(url: str):
@@ -43,6 +49,7 @@ def _read_url(url: str):
 
 
 def _estc_url(estc_number: str):
+    print("Fetching information for ESTC number:", estc_number)
     url = "http://estc.bl.uk/{}".format(estc_number)
     html = _read_url(url)
     soup = BeautifulSoup(html, 'html.parser')
@@ -57,7 +64,7 @@ def _estc_url(estc_number: str):
     return url_new
 
 
-def est_info(estc_number: str) -> pd.DataFrame:
+def _est_info_for_number(estc_number: str) -> dict:
     url = _estc_url(estc_number)
     html = _read_url(url)
     # text_file = open("test.html", "r")
@@ -65,13 +72,14 @@ def est_info(estc_number: str) -> pd.DataFrame:
     soup = BeautifulSoup(html, "html.parser")
     _do_query = partial(_query_html, soup)
 
-    columns = ["ESTC No.", "Title", "Author", "Pub_Info", "Description", "Location", "General Note", "Citation/Ref. Note"]
-    text_queries = ["ESTC Citation No.", "Main Title", "ME-Personal Name", "Imprint", "Phys.Description", "Location",
-                    "General Note", "Citation/Ref. Note"]
-
     df_values = {}
     for column, query in zip(columns, text_queries):
         df_values[column] = _do_query(query)
-    df = pd.DataFrame(df_values)
-    df.fillna('')
+    return df_values
+
+
+def est_info(estc_numbers: [str]) -> pd.DataFrame:
+    mapped_df_values = map(_est_info_for_number, estc_numbers)
+    df = pd.DataFrame(mapped_df_values)
+    df.reset_index(drop=True)
     return df
