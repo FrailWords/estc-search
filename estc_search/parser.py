@@ -30,7 +30,7 @@ def _query_html(soup: BeautifulSoup, field: str) -> pd.Series:
         if value is not None:
             value = value.replace('\xa0', ' ')
             values.append(value)
-    return pd.Series(values)
+    return pd.Series(values, dtype=str)
 
 
 def _read_url(url: str):
