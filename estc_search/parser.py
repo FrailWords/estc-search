@@ -24,7 +24,12 @@ def _query_html(soup: BeautifulSoup, field: str) -> pd.Series:
     """
     # find all values containing query field
     all_text = soup.find_all('td', string=field)
-    values = [text.find_next_sibling("td").text for text in all_text]
+    values = []
+    for text in all_text:
+        value = text.find_next_sibling("td").text
+        if value is not None:
+            value = value.replace('\xa0', ' ')
+            values.append(value)
     return pd.Series(values)
 
 

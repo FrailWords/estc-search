@@ -6,6 +6,8 @@ from tabulate import tabulate
 @click.command()
 @click.option("--estc_number", prompt="estc_number", help="Search ESTC using this number")
 def main(estc_number):
+    result = est_info(estc_number)
+    result.to_csv(r'output.csv', index=False)
     print(tabulate(est_info(estc_number), headers='keys', tablefmt='fancy_grid', showindex=False, maxcolwidths=[10, 30, 30, 30, 20, 30, 30, 30]))
 
 
