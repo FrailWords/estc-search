@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 from functools import partial
-import pandas as pd
 import urllib.request
 from urllib.parse import parse_qs, urlencode, urlsplit
 
@@ -10,22 +9,6 @@ text_queries = ["ESTC Citation No.", "Main Title", "ME-Personal Name", "Imprint"
 
 
 def _query_html(soup: BeautifulSoup, field: str) -> str:
-    """
-    Finds all instances of single query field e.g. Author, Title etc.
-    (becomes column in DF)
-
-    Parameters
-    ----------
-    soup : BeautifulSoup
-        BeautifulSoup html parsed object
-    field: str
-        Desired search field text e.g. Publisher_year
-
-    Returns
-    -------
-    field_values : pd.Series
-        pd.Series of all desired field values consisting of future DF column
-    """
     # find all values containing query field
     all_text = soup.find_all('td', string=field)
     values = []
@@ -64,7 +47,7 @@ def _estc_url(estc_number: str):
     return url_new
 
 
-def _est_info_for_number(estc_number: str) -> dict:
+def _est_info_for_number(estc_number: str) -> []:
     url = _estc_url(estc_number)
     html = _read_url(url)
     # text_file = open("test.html", "r")
@@ -72,14 +55,14 @@ def _est_info_for_number(estc_number: str) -> dict:
     soup = BeautifulSoup(html, "html.parser")
     _do_query = partial(_query_html, soup)
 
-    df_values = {}
+    df_values = []
     for column, query in zip(columns, text_queries):
-        df_values[column] = _do_query(query)
+        df_values.append(_do_query(query))
     return df_values
 
 
-def est_info(estc_numbers: [str]) -> pd.DataFrame:
-    mapped_df_values = map(_est_info_for_number, estc_numbers)
-    df = pd.DataFrame(mapped_df_values)
-    df.reset_index(drop=True)
-    return df
+def est_info(estc_numbers: [str]) -> [object]:
+    result = [columns]
+    for estc_number in estc_numbers:
+        result.append(_est_info_for_number(estc_number))
+    return result
